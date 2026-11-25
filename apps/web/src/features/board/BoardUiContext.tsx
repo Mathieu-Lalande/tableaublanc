@@ -18,3 +18,14 @@ export function useBoardUi(): BoardUi {
   if (!ctx) throw new Error('useBoardUi hors de <BoardUiContext>')
   return ctx
 }
+
+/** Utilisateur courant, ou null hors d'un board (ex. rendu d'export). */
+export function useCurrentUser(): { id: string; name: string } | null {
+  const ctx = useContext(BoardUiContext)
+  return ctx ? { id: ctx.me.id, name: ctx.me.username } : null
+}
+
+/** Contexte du board s'il existe (les shapes peuvent être rendues hors board, ex. export). */
+export function useOptionalBoardUi(): BoardUi | null {
+  return useContext(BoardUiContext)
+}

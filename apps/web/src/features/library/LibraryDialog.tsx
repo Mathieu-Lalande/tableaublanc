@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Command } from 'cmdk'
 import { Dialog as RadixDialog } from 'radix-ui'
 import type { Editor } from 'tldraw'
 import { toast } from 'sonner'
 import { libraryItems } from './items'
+import { rankItems } from './libraryFilter'
 import type { LibraryCategory, LibraryItem } from './types'
 
 const CATEGORIES: readonly LibraryCategory[] = ['Modules', 'Modèles', 'Jeux', 'Fichier']
@@ -14,16 +16,42 @@ export interface LibraryDialogProps {
   readonly onOpenChange: (open: boolean) => void
 }
 
+const groupClass =
+  '[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground'
+
 /** Command palette (Ctrl/Cmd+K) : insertion de modules, modèles, jeux et actions fichier. */
 export function LibraryDialog({ editor, boardId, open, onOpenChange }: LibraryDialogProps) {
+  const [search, setSearch] = useState('')
+
   const run = async (item: LibraryItem) => {
     onOpenChange(false)
+    setSearch('')
     try {
       await item.run({ editor, boardId })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Action impossible')
     }
   }
+
+  const renderItem = (item: LibraryItem) => (
+    <Command.Item
+      key={item.id}
+      value={item.id}
+      onSelect={() => void run(item)}
+      className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 data-[selected=true]:bg-accent"
+    >
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-muted text-lg">
+        {item.emoji}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-medium">{item.label}</span>
+        <span className="block truncate text-xs text-muted-foreground">{item.description}</span>
+      </span>
+    </Command.Item>
+  )
+
+  // Recherche : liste plate triée par pertinence ; sinon, regroupement par catégorie.
+  const results = search.trim() ? rankItems(libraryItems, search) : null
 
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -35,9 +63,11 @@ export function LibraryDialog({ editor, boardId, open, onOpenChange }: LibraryDi
           onKeyDown={(e) => e.stopPropagation()}
         >
           <RadixDialog.Title className="sr-only">Bibliothèque</RadixDialog.Title>
-          <Command label="Bibliothèque" loop>
+          <Command label="Bibliothèque" loop shouldFilter={false}>
             <Command.Input
               autoFocus
+              value={search}
+              onValueChange={setSearch}
               placeholder="Insérer un module, un modèle, un jeu…"
               className="h-12 w-full border-b border-border bg-transparent px-4 text-sm outline-none placeholder:text-muted-foreground"
             />
@@ -45,36 +75,16 @@ export function LibraryDialog({ editor, boardId, open, onOpenChange }: LibraryDi
               <Command.Empty className="py-8 text-center text-sm text-muted-foreground">
                 Rien trouvé 🤷
               </Command.Empty>
-              {CATEGORIES.map((cat) => {
-                const items = libraryItems.filter((i) => i.category === cat)
-                if (items.length === 0) return null
-                return (
-                  <Command.Group
-                    key={cat}
-                    heading={cat}
-                    className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
-                  >
-                    {items.map((item) => (
-                      <Command.Item
-                        key={item.id}
-                        value={`${item.label} ${item.keywords?.join(' ') ?? ''}`}
-                        onSelect={() => void run(item)}
-                        className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 data-[selected=true]:bg-accent"
-                      >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-muted text-lg">
-                          {item.emoji}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-sm font-medium">{item.label}</span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {item.description}
-                          </span>
-                        </span>
-                      </Command.Item>
-                    ))}
-                  </Command.Group>
-                )
-              })}
+              {results
+                ? results.map(renderItem)
+                : CATEGORIES.map((cat) => {
+                    const items = libraryItems.filter((i) => i.category === cat)
+                    return items.length === 0 ? null : (
+                      <Command.Group key={cat} heading={cat} className={groupClass}>
+                        {items.map(renderItem)}
+                      </Command.Group>
+                    )
+                  })}
             </Command.List>
           </Command>
         </RadixDialog.Content>

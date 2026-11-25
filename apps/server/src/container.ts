@@ -13,6 +13,7 @@ import { AssetService } from './services/assetService'
 import { AssetStorage } from './services/assetStorage'
 import { BoardService } from './services/boardService'
 import { InviteService } from './services/inviteService'
+import { PictionaryService } from './services/pictionaryService'
 import { SignupCodeService } from './services/signupCodeService'
 import { RoomManager, type RoomLogger } from './sync/roomManager'
 import { BoardSyncAuthorizer } from './sync/boardSyncAuthorizer'
@@ -29,6 +30,7 @@ export interface Container {
   readonly invites: InviteService
   readonly assets: AssetService
   readonly signupCodes: SignupCodeService
+  readonly pictionary: PictionaryService
   readonly syncAuthorizer: SyncAuthorizer
 }
 
@@ -61,6 +63,7 @@ export function createContainer(env: Env, log: RoomLogger): Container {
     invites: new InviteService(new InviteRepository(db), boards),
     assets: new AssetService(assetRepo, boards, storage, env.MAX_UPLOAD_BYTES),
     signupCodes: new SignupCodeService(signupCodeRepo),
+    pictionary: new PictionaryService(rooms, boards),
     syncAuthorizer: new BoardSyncAuthorizer(auth, boards, accounts),
   }
 }

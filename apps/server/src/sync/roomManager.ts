@@ -108,6 +108,34 @@ export class RoomManager {
     }
   }
 
+  /** Lit un record d'une room chargée (undefined si la room n'est pas active). */
+  getRecord(boardId: string, id: string): TLRecord | undefined {
+    const managed = this.rooms.get(boardId)
+    if (!managed) return undefined
+    return managed.room.getRecord(id) ?? undefined
+  }
+
+  /**
+   * Écriture serveur dans une room active (non soumise aux authorizers clients).
+   * Retourne false si la room n'est pas chargée ou si le record n'existe pas.
+   */
+  async updateRecord(
+    boardId: string,
+    id: string,
+    updater: (record: TLRecord) => TLRecord,
+  ): Promise<boolean> {
+    const managed = this.rooms.get(boardId)
+    if (!managed) return false
+    let found = false
+    await managed.room.updateStore((store) => {
+      const record = store.get(id)
+      if (!record) return
+      found = true
+      store.put(updater(record))
+    })
+    return found
+  }
+
   connectedUserIds(boardId: string): string[] {
     const managed = this.rooms.get(boardId)
     if (!managed) return []

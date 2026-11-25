@@ -9,6 +9,7 @@ import security from './http/plugins/security'
 import { assetRoutes } from './http/routes/assetRoutes'
 import { authRoutes } from './http/routes/authRoutes'
 import { boardRoutes } from './http/routes/boardRoutes'
+import { gameRoutes } from './http/routes/gameRoutes'
 import { inviteRoutes } from './http/routes/inviteRoutes'
 import { syncRoutes } from './sync/syncRoutes'
 
@@ -39,6 +40,7 @@ export async function buildApp(c: Container): Promise<FastifyInstance> {
   await app.register(boardRoutes, { auth: c.auth, boards: c.boards, invites: c.invites })
   await app.register(inviteRoutes, { auth: c.auth, invites: c.invites })
   await app.register(assetRoutes, { auth: c.auth, assets: c.assets })
+  await app.register(gameRoutes, { auth: c.auth, accounts: c.accounts, pictionary: c.pictionary })
   await app.register(syncRoutes, {
     rooms: c.rooms,
     authorizer: c.syncAuthorizer,
@@ -56,6 +58,7 @@ export async function buildApp(c: Container): Promise<FastifyInstance> {
   }
 
   app.addHook('onClose', async () => {
+    c.pictionary.dispose()
     c.rooms.closeAll()
     c.dbHandle.sqlite.close()
   })
