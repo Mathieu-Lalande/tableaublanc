@@ -18,6 +18,8 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(10 * 1024 * 1024),
+  /** Multiplicateur des limites de débit (tests e2e uniquement ; refusé en production). */
+  RATE_LIMIT_MULTIPLIER: z.coerce.number().int().min(1).max(1000).default(1),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 })
 
@@ -33,6 +35,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const env = parsed.data
   if (env.NODE_ENV === 'production' && !env.AUTH_SECRET) {
     throw new Error('Configuration invalide : AUTH_SECRET est obligatoire en production')
+  }
+  if (env.NODE_ENV === 'production' && env.RATE_LIMIT_MULTIPLIER !== 1) {
+    throw new Error('Configuration invalide : RATE_LIMIT_MULTIPLIER doit valoir 1 en production')
   }
   return env
 }

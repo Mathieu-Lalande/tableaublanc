@@ -11,7 +11,12 @@ import {
 } from 'tldraw'
 import { customRecordSchemas } from '@canvas/shared'
 import { getUserPresence } from '@/features/collaboration/reactions'
-import { customShapeUtils, customTools } from '@/features/modules/registry'
+import {
+  customShapeUtils,
+  customTools,
+  getShapeVisibility,
+  registerModules,
+} from '@/features/modules/registry'
 import { createAssetStore } from './assetStore'
 import { buildSyncUri } from './syncUri'
 import { tldrawAssetUrls } from './tldrawAssets'
@@ -67,11 +72,13 @@ export function BoardCanvas({
         assetUrls={tldrawAssetUrls}
         licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
         components={components}
+        getShapeVisibility={getShapeVisibility}
         {...(overrides ? { overrides } : {})}
         onMount={(editor) => {
           editor.user.updateUserPreferences({ colorScheme })
           if (import.meta.env.DEV) Object.assign(window, { editor })
           onEditor?.(editor)
+          return registerModules(editor)
         }}
       />
     </div>

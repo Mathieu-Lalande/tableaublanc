@@ -7,6 +7,7 @@ import { AppError } from '../../lib/errors'
 export interface SecurityOptions {
   readonly publicOrigin: string
   readonly isTest: boolean
+  readonly rateLimitMultiplier: number
 }
 
 const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -58,7 +59,7 @@ async function security(app: FastifyInstance, opts: SecurityOptions): Promise<vo
 
   await app.register(rateLimit, {
     global: true,
-    max: opts.isTest ? 10_000 : 300,
+    max: opts.isTest ? 10_000 : 300 * opts.rateLimitMultiplier,
     timeWindow: '1 minute',
     errorResponseBuilder: () => ({ statusCode: 429, error: GENERIC_MESSAGES[429] }),
   })

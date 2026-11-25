@@ -22,6 +22,7 @@ export default defineConfig({
         PUBLIC_ORIGIN: `http://localhost:${WEB_PORT}`,
         AUTH_SECRET: 'e2e-secret-e2e-secret-e2e-secret-e2e',
         E2E_SIGNUP_CODE: 'E2E-CODE',
+        RATE_LIMIT_MULTIPLIER: '100',
       },
     },
     {

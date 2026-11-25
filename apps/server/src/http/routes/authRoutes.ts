@@ -12,6 +12,7 @@ export interface AuthRoutesOptions {
   readonly auth: Auth
   readonly accounts: AccountService
   readonly publicOrigin: string
+  readonly rateLimitMultiplier: number
 }
 
 /** Chemins Better Auth exposés au navigateur (liste blanche). */
@@ -27,7 +28,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRoutesOptions):
   app.route({
     method: ['GET', 'POST'],
     url: '/api/auth/*',
-    config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
+    config: { rateLimit: { max: 30 * opts.rateLimitMultiplier, timeWindow: '1 minute' } },
     handler: async (req, reply) => {
       const path = new URL(req.url, opts.publicOrigin).pathname
       if (!ALLOWED_AUTH_PATHS.has(path)) throw notFound()
@@ -38,7 +39,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRoutesOptions):
 
   app.post(
     '/api/account/register',
-    { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } },
+    { config: { rateLimit: { max: 10 * opts.rateLimitMultiplier, timeWindow: '15 minutes' } } },
     async (req, reply) => {
       const input = parse(registerInputSchema, req.body)
       const response = await accounts.register(input, fromNodeHeaders(req.headers))

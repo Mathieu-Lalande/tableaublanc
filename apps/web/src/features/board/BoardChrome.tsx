@@ -3,6 +3,7 @@ import { ArrowLeft, Eye, LibraryBig, MessageCircle, Share2 } from 'lucide-react'
 import { PeopleMenu } from 'tldraw'
 import { ChatPanel } from '@/features/collaboration/ChatPanel'
 import { ReactionBar } from '@/features/collaboration/ReactionBar'
+import { ModuleOverlays } from '@/features/modules/ModuleOverlays'
 import { cn } from '@/lib/utils'
 import { useBoardUi } from './BoardUiContext'
 
@@ -74,9 +75,12 @@ export function BoardSharePanel() {
 export function BoardOverlay() {
   const { me, chatOpen, toggleChat } = useBoardUi()
   return (
-    <div className="pointer-events-none absolute bottom-14 left-2 flex flex-col items-start gap-2">
-      {chatOpen && <ChatPanel me={me} onClose={toggleChat} />}
-      <ReactionBar />
-    </div>
+    <>
+      <ModuleOverlays />
+      <div className="pointer-events-none absolute bottom-14 left-2 flex flex-col items-start gap-2">
+        {chatOpen && <ChatPanel me={me} onClose={toggleChat} />}
+        <ReactionBar />
+      </div>
+    </>
   )
 }

@@ -6,7 +6,7 @@ import {
   type CustomRecordInfo,
   type TLSchema,
 } from '@tldraw/tlschema'
-import { customShapeSchemas } from './shapes'
+import { customShapeSchemas } from './shapes/index'
 import { customRecordSchemas, OBJECT_LANE_RECORD_TYPES } from './records'
 
 export { OBJECT_LANE_RECORD_TYPES }

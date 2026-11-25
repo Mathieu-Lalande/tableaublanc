@@ -73,9 +73,9 @@ export function createAuth(db: Db, env: Env) {
     rateLimit: {
       enabled: env.NODE_ENV !== 'test',
       window: 60,
-      max: 60,
+      max: 60 * env.RATE_LIMIT_MULTIPLIER,
       customRules: {
-        '/sign-in/username': { window: 60, max: 5 },
+        '/sign-in/username': { window: 60, max: 5 * env.RATE_LIMIT_MULTIPLIER },
       },
     },
     advanced: {

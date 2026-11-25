@@ -21,7 +21,11 @@ export async function buildApp(c: Container): Promise<FastifyInstance> {
     bodyLimit: 1024 * 1024,
   })
 
-  await app.register(security, { publicOrigin: env.PUBLIC_ORIGIN, isTest: env.NODE_ENV === 'test' })
+  await app.register(security, {
+    publicOrigin: env.PUBLIC_ORIGIN,
+    isTest: env.NODE_ENV === 'test',
+    rateLimitMultiplier: env.RATE_LIMIT_MULTIPLIER,
+  })
   await app.register(multipart, { limits: { fileSize: env.MAX_UPLOAD_BYTES, files: 1, fields: 5 } })
   await app.register(websocket, { options: { maxPayload: 16 * 1024 * 1024 } })
 
@@ -30,6 +34,7 @@ export async function buildApp(c: Container): Promise<FastifyInstance> {
     auth: c.auth,
     accounts: c.accounts,
     publicOrigin: env.PUBLIC_ORIGIN,
+    rateLimitMultiplier: env.RATE_LIMIT_MULTIPLIER,
   })
   await app.register(boardRoutes, { auth: c.auth, boards: c.boards, invites: c.invites })
   await app.register(inviteRoutes, { auth: c.auth, invites: c.invites })
