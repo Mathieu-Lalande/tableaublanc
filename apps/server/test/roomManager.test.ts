@@ -42,7 +42,7 @@ describe('RoomManager', () => {
       boardId: 'board-12345',
       sessionId: 's1',
       socket,
-      meta: { userId: 'u1', role: 'EDITOR' },
+      meta: { userId: 'u1', username: 'u1', color: '#000000', role: 'EDITOR' },
     })
     expect(manager.isLoaded('board-12345')).toBe(true)
     expect(existsSync(join(dir, 'board-12345.db'))).toBe(true)
@@ -57,13 +57,13 @@ describe('RoomManager', () => {
       boardId: 'board-12345',
       sessionId: 's1',
       socket: a.socket,
-      meta: { userId: 'u1', role: 'EDITOR' },
+      meta: { userId: 'u1', username: 'u1', color: '#000000', role: 'EDITOR' },
     })
     manager.connect({
       boardId: 'board-12345',
       sessionId: 's2',
       socket: b.socket,
-      meta: { userId: 'u2', role: 'VIEWER' },
+      meta: { userId: 'u2', username: 'u2', color: '#000000', role: 'VIEWER' },
     })
     expect(manager.disconnectUser('board-12345', 'u1', 4409, 'revoked')).toBe(1)
     expect(a.closed[0]).toBe(4409)
@@ -83,7 +83,7 @@ describe('RoomManager', () => {
       boardId: 'board-abcdef',
       sessionId: 's1',
       socket,
-      meta: { userId: 'u1', role: 'OWNER' },
+      meta: { userId: 'u1', username: 'u1', color: '#000000', role: 'OWNER' },
     })
     manager.deleteRoom('board-abcdef')
     expect(existsSync(join(dir, 'board-abcdef.db'))).toBe(false)

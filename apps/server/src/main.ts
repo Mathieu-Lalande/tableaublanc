@@ -1,37 +1,37 @@
-import { join, resolve } from 'node:path'
-import { createCanvasSchema, OBJECT_LANE_RECORD_TYPES } from '@canvas/shared'
 import { loadEnv } from './config/env'
 import { buildApp } from './app'
-import { RoomManager } from './sync/roomManager'
+import { createContainer } from './container'
+import type { RoomLogger } from './sync/roomManager'
 
 const env = loadEnv()
-const dataDir = resolve(env.DATA_DIR)
 
-const placeholderLog = { info: () => {}, warn: () => {}, error: () => {} }
-const rooms = new RoomManager({
-  roomsDir: join(dataDir, 'rooms'),
-  schema: createCanvasSchema(),
-  objectTypes: OBJECT_LANE_RECORD_TYPES,
-  log: placeholderLog,
-})
+// Le logger Fastify n'existe qu'après buildApp : on lui délègue via un proxy minimal.
+const target: { current?: RoomLogger } = {}
+const log: RoomLogger = {
+  info: (o, m) => target.current?.info(o, m),
+  warn: (o, m) => target.current?.warn(o, m),
+  error: (o, m) => target.current?.error(o, m),
+}
 
-const app = await buildApp({
-  env,
-  rooms,
-  // P1 : accès ouvert en local uniquement. Remplacé par l'autorisation par board en P2.
-  syncAuthorizer: {
-    authorize: async () => ({ userId: 'dev', role: 'EDITOR' }),
-  },
-})
-Object.assign(placeholderLog, {
-  info: (o: object, m: string) => app.log.info(o, m),
-  warn: (o: object, m: string) => app.log.warn(o, m),
-  error: (o: object, m: string) => app.log.error(o, m),
-})
+const container = createContainer(env, log)
+const app = await buildApp(container)
+target.current = {
+  info: (o, m) => app.log.info(o, m),
+  warn: (o, m) => app.log.warn(o, m),
+  error: (o, m) => app.log.error(o, m),
+}
+
+// Bootstrap e2e uniquement : code d'inscription connu, jamais en production.
+if (env.NODE_ENV !== 'production' && process.env.E2E_SIGNUP_CODE) {
+  try {
+    container.signupCodes.create({ maxUses: 1000, code: process.env.E2E_SIGNUP_CODE })
+  } catch {
+    // déjà créé lors d'un précédent démarrage
+  }
+}
 
 const shutdown = async () => {
   await app.close()
-  rooms.closeAll()
   process.exit(0)
 }
 process.on('SIGINT', shutdown)

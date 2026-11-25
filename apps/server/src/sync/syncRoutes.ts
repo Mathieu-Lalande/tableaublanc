@@ -1,12 +1,9 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { boardIdSchema, type Role } from '@canvas/shared'
-import type { RoomManager } from './roomManager'
+import { boardIdSchema } from '@canvas/shared'
+import type { RoomManager, SessionMeta } from './roomManager'
 
-export interface SyncAccess {
-  readonly userId: string
-  readonly role: Role
-}
+export type SyncAccess = SessionMeta
 
 /** Décide si la requête d'upgrade peut rejoindre la room. Implémenté par le module boards en P2. */
 export interface SyncAuthorizer {

@@ -1,19 +1,60 @@
-import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router'
-import { BoardCanvas } from '@/features/board/BoardCanvas'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { Toaster } from 'sonner'
+import { LoginPage } from '@/features/auth/LoginPage'
+import { RegisterPage } from '@/features/auth/RegisterPage'
+import { RequireAuth } from '@/features/auth/RequireAuth'
+import { BoardPage } from '@/features/board/BoardPage'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { InvitePage } from '@/features/invite/InvitePage'
+import { ThemeProvider, useTheme } from '@/features/theme/ThemeProvider'
 
-function BoardRoute() {
-  const { boardId } = useParams()
-  if (!boardId) return <Navigate to="/" replace />
-  return <BoardCanvas boardId={boardId} />
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+})
+
+function ThemedToaster() {
+  const { resolved } = useTheme()
+  return <Toaster theme={resolved} position="bottom-center" richColors />
 }
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/b/:boardId" element={<BoardRoute />} />
-        <Route path="*" element={<Navigate to="/b/local-dev-board" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <DashboardPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/b/:boardId"
+              element={
+                <RequireAuth>
+                  <BoardPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/invite/:token"
+              element={
+                <RequireAuth>
+                  <InvitePage />
+                </RequireAuth>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+        <ThemedToaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }

@@ -4,10 +4,14 @@ import {
   defaultBindingUtils,
   defaultShapeUtils,
   Tldraw,
+  type Editor,
   type TLComponents,
+  type TLUiOverrides,
   type TLUserStore,
 } from 'tldraw'
-import { customShapeUtils } from '@/features/modules/registry'
+import { customRecordSchemas } from '@canvas/shared'
+import { getUserPresence } from '@/features/collaboration/reactions'
+import { customShapeUtils, customTools } from '@/features/modules/registry'
 import { createAssetStore } from './assetStore'
 import { buildSyncUri } from './syncUri'
 import { tldrawAssetUrls } from './tldrawAssets'
@@ -17,33 +21,39 @@ const storeShapeUtils = [...defaultShapeUtils, ...customShapeUtils]
 
 export interface BoardCanvasProps {
   readonly boardId: string
-  readonly users?: TLUserStore
-  readonly readOnly?: boolean
-  readonly components?: TLComponents
+  readonly users: TLUserStore
+  readonly components: TLComponents
+  readonly overrides?: TLUiOverrides
+  readonly colorScheme: 'light' | 'dark'
   readonly onCustomMessage?: (data: unknown) => void
+  readonly onEditor?: (editor: Editor) => void
 }
 
 export function BoardCanvas({
   boardId,
   users,
-  readOnly,
   components,
+  overrides,
+  colorScheme,
   onCustomMessage,
+  onEditor,
 }: BoardCanvasProps) {
   const assets = useMemo(() => createAssetStore(boardId), [boardId])
   const store = useSync({
     uri: buildSyncUri(boardId, window.location),
     assets,
+    users,
     shapeUtils: storeShapeUtils,
     bindingUtils: defaultBindingUtils,
-    ...(users ? { users } : {}),
+    records: customRecordSchemas,
+    getUserPresence,
     ...(onCustomMessage ? { onCustomMessageReceived: onCustomMessage } : {}),
   })
 
   if (store.status === 'error') {
     return (
       <div className="grid h-full place-items-center text-muted-foreground" role="alert">
-        Connexion au board impossible.
+        Connexion au board impossible. Vérifie que tu as toujours accès à ce board.
       </div>
     )
   }
@@ -53,12 +63,15 @@ export function BoardCanvas({
       <Tldraw
         store={store}
         shapeUtils={customShapeUtils}
+        tools={customTools}
         assetUrls={tldrawAssetUrls}
         licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
-        {...(components ? { components } : {})}
+        components={components}
+        {...(overrides ? { overrides } : {})}
         onMount={(editor) => {
-          if (readOnly) editor.updateInstanceState({ isReadonly: true })
+          editor.user.updateUserPreferences({ colorScheme })
           if (import.meta.env.DEV) Object.assign(window, { editor })
+          onEditor?.(editor)
         }}
       />
     </div>

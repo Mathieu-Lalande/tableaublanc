@@ -1,16 +1,14 @@
 import { expect, test } from '@playwright/test'
-import { shapeCount, waitForEditor, type EditorWindow } from './helpers'
+import { createBoardViaUi, inviteViaUi, registerViaUi, uniqueName } from './fixtures'
+import { shapeCount, type EditorWindow } from './helpers'
 
-test('une forme créée dans un navigateur apparaît dans l’autre, avec le curseur distant', async ({
+test('deux potes sur un board : forme synchronisée et curseur distant visible', async ({
   browser,
 }) => {
-  const boardUrl = `/b/e2e-${Date.now()}`
-  const ctxA = await browser.newContext()
-  const ctxB = await browser.newContext()
-  const a = await ctxA.newPage()
-  const b = await ctxB.newPage()
-  await Promise.all([a.goto(boardUrl), b.goto(boardUrl)])
-  await Promise.all([waitForEditor(a), waitForEditor(b)])
+  const a = await registerViaUi(browser, uniqueName('alice'))
+  const b = await registerViaUi(browser, uniqueName('bob'))
+  await createBoardViaUi(a, 'Board e2e')
+  await inviteViaUi(a, b, 'EDITOR')
 
   await a.evaluate(() => {
     ;(window as unknown as EditorWindow).editor.createShape({
@@ -22,11 +20,32 @@ test('une forme créée dans un navigateur apparaît dans l’autre, avec le cur
   })
   await expect.poll(() => shapeCount(b)).toBe(1)
 
-  // Curseur distant : A bouge sa souris, B doit afficher un curseur collaborateur.
-  await a.getByTestId('board-canvas').hover({ position: { x: 300, y: 300 } })
-  await a.mouse.move(320, 320, { steps: 5 })
+  await a.getByTestId('board-canvas').hover({ position: { x: 400, y: 300 } })
+  await a.mouse.move(420, 320, { steps: 5 })
   await expect(b.locator('.tl-cursor').first()).toBeVisible()
+})
 
-  await ctxA.close()
-  await ctxB.close()
+test('un lecteur voit le board mais ne peut pas le modifier, et peut chatter', async ({
+  browser,
+}) => {
+  const owner = await registerViaUi(browser, uniqueName('owner'))
+  const viewer = await registerViaUi(browser, uniqueName('viewer'))
+  await createBoardViaUi(owner, 'Board lecture')
+  await inviteViaUi(owner, viewer, 'VIEWER')
+  await expect(viewer.getByText('Lecture seule')).toBeVisible()
+
+  // Contournement volontaire de l'UI : le serveur doit refuser l'écriture.
+  await viewer.evaluate(() => {
+    const ed = (window as unknown as EditorWindow).editor
+    ed.updateInstanceState({ isReadonly: false })
+    ed.createShape({ type: 'geo', x: 0, y: 0, props: { w: 50, h: 50 } })
+  })
+  await owner.waitForTimeout(800)
+  expect(await shapeCount(owner)).toBe(0)
+
+  await viewer.getByRole('button', { name: 'Chat' }).click()
+  await viewer.getByLabel('Message').fill('coucou du lecteur')
+  await viewer.getByLabel('Message').press('Enter')
+  await owner.getByRole('button', { name: 'Chat' }).click()
+  await expect(owner.getByTestId('chat-messages')).toContainText('coucou du lecteur')
 })

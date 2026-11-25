@@ -9,9 +9,12 @@ import {
 } from '@tldraw/sync-core'
 import type { TLRecord, TLSchema } from '@tldraw/tlschema'
 import { boardIdSchema, type Role } from '@canvas/shared'
+import { createRecordAuthorizers } from './recordAuthorizers'
 
 export interface SessionMeta {
   readonly userId: string
+  readonly username: string
+  readonly color: string
   readonly role: Role
 }
 
@@ -141,6 +144,8 @@ export class RoomManager {
     const room = new TLSocketRoom<TLRecord, SessionMeta>({
       storage,
       schema: this.opts.schema,
+      objectTypes: this.opts.objectTypes,
+      authorizeRecord: createRecordAuthorizers(),
       log: {
         warn: (...args: unknown[]) => this.opts.log.warn({ boardId, args }, 'tldraw room warning'),
         error: (...args: unknown[]) => this.opts.log.error({ boardId, args }, 'tldraw room error'),

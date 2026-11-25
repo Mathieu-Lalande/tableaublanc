@@ -67,3 +67,38 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Réactions emoji : montée + fondu, désactivées si l'utilisateur réduit les animations. */
+.canvas-reaction {
+  transform: translate(-50%, -120%);
+  animation: canvas-float 2.2s ease-out forwards;
+  z-index: 1000;
+}
+@keyframes canvas-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -80%) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -130%) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -320%) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-reaction {
+    animation-duration: 1.2s;
+    animation-name: canvas-fade;
+  }
+  @keyframes canvas-fade {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
