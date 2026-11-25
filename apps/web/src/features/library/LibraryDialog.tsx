@@ -7,27 +7,34 @@ import { libraryItems } from './items'
 import { rankItems } from './libraryFilter'
 import type { LibraryCategory, LibraryItem } from './types'
 
-const CATEGORIES: readonly LibraryCategory[] = ['Modules', 'Modèles', 'Jeux', 'Fichier']
+const CATEGORIES: readonly LibraryCategory[] = ['Modules', 'Modèles', 'Jeux', 'Fichier', 'Aide']
 
 export interface LibraryDialogProps {
   readonly editor: Editor
   readonly boardId: string
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
+  readonly openShortcuts: () => void
 }
 
 const groupClass =
   '[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground'
 
 /** Command palette (Ctrl/Cmd+K) : insertion de modules, modèles, jeux et actions fichier. */
-export function LibraryDialog({ editor, boardId, open, onOpenChange }: LibraryDialogProps) {
+export function LibraryDialog({
+  editor,
+  boardId,
+  open,
+  onOpenChange,
+  openShortcuts,
+}: LibraryDialogProps) {
   const [search, setSearch] = useState('')
 
   const run = async (item: LibraryItem) => {
     onOpenChange(false)
     setSearch('')
     try {
-      await item.run({ editor, boardId })
+      await item.run({ editor, boardId, openShortcuts })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Action impossible')
     }

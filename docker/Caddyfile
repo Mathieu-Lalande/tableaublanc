@@ -1,0 +1,17 @@
+# HTTPS automatique (Let's Encrypt) pour le domaine défini dans .env (DOMAIN=…).
+{$DOMAIN} {
+	encode zstd gzip
+
+	# L'application ne fait confiance qu'à X-Real-IP, toujours écrasé ici (pas de spoofing).
+	reverse_proxy app:5858 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	# Pas d'indexation par les moteurs de recherche (usage privé).
+	header X-Robots-Tag "noindex, nofollow"
+
+	log {
+		output stdout
+		format console
+	}
+}

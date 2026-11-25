@@ -82,8 +82,8 @@ export function createAuth(db: Db, env: Env) {
       useSecureCookies: isProd,
       cookiePrefix: 'canvas',
       defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', secure: isProd, path: '/' },
-      // Derrière Caddy, seul X-Real-IP (écrasé par le proxy) est digne de confiance.
-      ipAddress: { ipAddressHeaders: isProd ? ['x-real-ip'] : ['x-forwarded-for'] },
+      // En production, seul l'en-tête écrasé par le reverse proxy est digne de confiance.
+      ipAddress: { ipAddressHeaders: isProd ? [env.CLIENT_IP_HEADER] : ['x-forwarded-for'] },
     },
   })
 }

@@ -19,6 +19,8 @@ export default defineConfig({
       '/api': { target: API_TARGET, ws: true, changeOrigin: false },
     },
   },
+  // Le chunk du board embarque tldraw (~1,8 Mo, chargé à la demande) : seuil relevé en connaissance de cause.
+  build: { chunkSizeWarningLimit: 2000 },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],

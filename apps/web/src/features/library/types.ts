@@ -1,10 +1,11 @@
 import type { Editor } from 'tldraw'
 
-export type LibraryCategory = 'Modules' | 'Modèles' | 'Jeux' | 'Fichier'
+export type LibraryCategory = 'Modules' | 'Modèles' | 'Jeux' | 'Fichier' | 'Aide'
 
 export interface LibraryContext {
   readonly editor: Editor
   readonly boardId: string
+  readonly openShortcuts: () => void
 }
 
 /** Élément insérable depuis la Bibliothèque / la command palette. */

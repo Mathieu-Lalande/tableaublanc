@@ -7,6 +7,7 @@ import { FullPageSpinner } from '@/components/ui/spinner'
 import { useMe } from '@/features/auth/useAuth'
 import { useBoard } from '@/features/boards/useBoards'
 import { LibraryDialog } from '@/features/library/LibraryDialog'
+import { ShortcutsDialog } from '@/features/library/ShortcutsDialog'
 import { useLibraryOverrides } from '@/features/library/useLibraryOverrides'
 import { useGameMessages } from '@/features/modules/games/useGameMessages'
 import { useTheme } from '@/features/theme/ThemeProvider'
@@ -48,6 +49,7 @@ function BoardWorkspace({ me, board }: { readonly me: Me; readonly board: BoardD
   const [chatOpen, setChatOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [libraryOpen, setLibraryOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const canEdit = board.role !== 'VIEWER'
   const onGameMessage = useGameMessages()
 
@@ -101,8 +103,10 @@ function BoardWorkspace({ me, board }: { readonly me: Me; readonly board: BoardD
           boardId={board.id}
           open={libraryOpen}
           onOpenChange={setLibraryOpen}
+          openShortcuts={() => setShortcutsOpen(true)}
         />
       )}
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </BoardUiContext.Provider>
   )
 }

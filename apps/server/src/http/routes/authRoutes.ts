@@ -33,7 +33,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRoutesOptions):
       const path = new URL(req.url, opts.publicOrigin).pathname
       if (!ALLOWED_AUTH_PATHS.has(path)) throw notFound()
       const response = await auth.handler(toFetchRequest(req, opts.publicOrigin))
-      return sendFetchResponse(reply, response)
+      return sendFetchResponse(reply, response, { redactSuccessBody: true })
     },
   })
 
@@ -43,7 +43,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRoutesOptions):
     async (req, reply) => {
       const input = parse(registerInputSchema, req.body)
       const response = await accounts.register(input, fromNodeHeaders(req.headers))
-      return sendFetchResponse(reply, response)
+      return sendFetchResponse(reply, response, { redactSuccessBody: true })
     },
   )
 

@@ -49,13 +49,16 @@ export async function buildApp(c: Container): Promise<FastifyInstance> {
 
   // Production : le serveur sert aussi le front buildé (même origine → pas de CORS).
   const webDist = env.WEB_DIST_DIR ? resolve(env.WEB_DIST_DIR) : undefined
-  if (webDist && existsSync(webDist)) {
+  const serveSpa = webDist !== undefined && existsSync(webDist)
+  if (serveSpa) {
     await app.register(fastifyStatic, { root: webDist, wildcard: false, index: ['index.html'] })
-    app.setNotFoundHandler((req, reply) => {
-      if (req.method === 'GET' && !req.url.startsWith('/api/')) return reply.sendFile('index.html')
-      return reply.code(404).send({ error: 'Ressource introuvable' })
-    })
   }
+  // Unique handler 404 : fallback SPA (routes du front) sinon erreur JSON générique.
+  app.setNotFoundHandler((req, reply) => {
+    if (serveSpa && req.method === 'GET' && !req.url.startsWith('/api/'))
+      return reply.sendFile('index.html')
+    return reply.code(404).send({ error: 'Ressource introuvable' })
+  })
 
   app.addHook('onClose', async () => {
     c.pictionary.dispose()

@@ -87,10 +87,6 @@ async function security(app: FastifyInstance, opts: SecurityOptions): Promise<vo
     req.log.error({ err }, 'unhandled error')
     return reply.code(500).send({ error: 'Erreur interne' })
   })
-
-  app.setNotFoundHandler((req, reply) => {
-    reply.code(404).send({ error: GENERIC_MESSAGES[404] })
-  })
 }
 
 export default fp(security, { name: 'canvas-security' })

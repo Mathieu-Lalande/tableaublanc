@@ -26,6 +26,8 @@ export function useBoardThumbnail(editor: Editor | null, boardId: string, enable
           scale: 0.4,
           background: true,
           padding: 24,
+          // Miniatures toujours en clair : rendu homogène dans le dashboard quel que soit le thème.
+          darkMode: false,
         })
         await boardsApi.uploadThumbnail(boardId, blob)
         lastClock = clock

@@ -65,8 +65,9 @@ export function BoardSharePanel() {
           'bg-primary text-primary-foreground hover:bg-primary hover:brightness-110',
         )}
         onClick={openShare}
+        aria-label="Partager"
       >
-        <Share2 className="h-4 w-4" /> Partager
+        <Share2 className="h-4 w-4" /> <span className="hidden sm:inline">Partager</span>
       </button>
     </div>
   )

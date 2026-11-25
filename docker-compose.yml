@@ -1,0 +1,38 @@
+# Déploiement sur un petit VPS : `docker compose up -d --build`
+# Variables lues depuis .env (voir .env.example).
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_TLDRAW_LICENSE_KEY: ${VITE_TLDRAW_LICENSE_KEY:-}
+    restart: unless-stopped
+    environment:
+      PUBLIC_ORIGIN: https://${DOMAIN:?DOMAIN manquant dans .env}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET manquant dans .env}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - canvas-data:/data
+    expose:
+      - '5858'
+
+  caddy:
+    image: caddy:2.11
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN manquant dans .env}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  canvas-data:
+  caddy-data:
+  caddy-config:

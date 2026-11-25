@@ -30,6 +30,8 @@ describe('Auth', () => {
       .post('/api/account/register')
       .send({ username: 'alice', password: 'correct-horse-battery', signupCode: t.signupCode })
     expect(res.status).toBe(200)
+    // Le token de session n'est jamais exposé dans le corps (cookie httpOnly uniquement).
+    expect(res.body).toEqual({ ok: true })
     const cookies = ([] as string[]).concat(res.headers['set-cookie'] ?? [])
     const sessionCookie = cookies.find((c) => c.includes('session_token'))
     expect(sessionCookie).toMatch(/HttpOnly/i)
@@ -66,6 +68,8 @@ describe('Auth', () => {
       .post('/api/auth/sign-in/username')
       .send({ username: 'erin', password: 'correct-horse-battery' })
     expect(good.status).toBe(200)
+    expect(good.body).toEqual({ ok: true })
+    expect(String(good.headers['set-cookie'])).toMatch(/session_token/)
     const bad = await agent(t.app)
       .post('/api/auth/sign-in/username')
       .send({ username: 'erin', password: 'wrong-password-123' })

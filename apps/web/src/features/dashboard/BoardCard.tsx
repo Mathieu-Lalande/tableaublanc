@@ -24,7 +24,7 @@ export function BoardCard({ board, onToggleFavorite, onRename, onDelete }: Board
               src={board.thumbnailUrl}
               alt=""
               loading="lazy"
-              className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03] dark:invert-[.9] dark:hue-rotate-180"
+              className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
             />
           ) : (
             <div className="grid h-full place-items-center text-4xl opacity-40">🎨</div>
@@ -35,7 +35,9 @@ export function BoardCard({ board, onToggleFavorite, onRename, onDelete }: Board
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-medium">{board.name}</h3>
           <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{relativeTime(board.lastOpenedAt ?? board.updatedAt)}</span>
+            <span className="whitespace-nowrap">
+              {relativeTime(board.lastOpenedAt ?? board.updatedAt)}
+            </span>
             <span aria-hidden>·</span>
             <span className="inline-flex items-center gap-1">
               <Users className="h-3 w-3" /> {board.memberCount}

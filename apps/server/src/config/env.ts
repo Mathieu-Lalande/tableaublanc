@@ -20,6 +20,11 @@ const envSchema = z.object({
     .default(10 * 1024 * 1024),
   /** Multiplicateur des limites de débit (tests e2e uniquement ; refusé en production). */
   RATE_LIMIT_MULTIPLIER: z.coerce.number().int().min(1).max(1000).default(1),
+  /** En-tête portant l'IP client, posé (et écrasé) par le reverse proxy. Caddy : x-real-ip. */
+  CLIENT_IP_HEADER: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .default('x-real-ip'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 })
 

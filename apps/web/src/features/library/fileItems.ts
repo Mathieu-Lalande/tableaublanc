@@ -98,4 +98,13 @@ export const fileItems: readonly LibraryItem[] = [
       if (file) await importTldrFile(editor, file)
     },
   },
+  {
+    id: 'help-shortcuts',
+    label: 'Raccourcis clavier',
+    description: 'Mind map, Bibliothèque, laser, chat au curseur…',
+    emoji: '⌨️',
+    category: 'Aide',
+    keywords: ['aide', 'clavier', 'touches', 'help'],
+    run: ({ openShortcuts }) => openShortcuts(),
+  },
 ]

@@ -75,7 +75,8 @@ export function BoardCanvas({
         getShapeVisibility={getShapeVisibility}
         {...(overrides ? { overrides } : {})}
         onMount={(editor) => {
-          editor.user.updateUserPreferences({ colorScheme })
+          // UI tldraw en français (traductions servies avec les assets self-hostés).
+          editor.user.updateUserPreferences({ colorScheme, locale: 'fr' })
           if (import.meta.env.DEV) Object.assign(window, { editor })
           onEditor?.(editor)
           return registerModules(editor)
